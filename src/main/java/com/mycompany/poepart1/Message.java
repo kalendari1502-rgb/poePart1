@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public final class Message {
@@ -18,7 +17,7 @@ public final class Message {
     private final String recipient;
     private final String messageText;
     private final String messageHash;
-    private String status; // "Sent", "Stored", or "Disregarded"
+    private String status;
     
     private static int totalMessagesSent = 0;
 
@@ -71,7 +70,7 @@ public final class Message {
             }
             case 3 -> {
                 this.status = "Stored";
-                storeMessage(); // Save to JSON
+                storeMessage(); 
                 return "Message successfully stored.";
             }
             default -> {
@@ -92,19 +91,17 @@ public final class Message {
         return totalMessagesSent;
     }
 
-    // --- JSON STORAGE ---
     public void storeMessage() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        List<Message> existingMessages = new ArrayList<>();
+        ArrayList<Message> existingMessages = new ArrayList<>();
         
         try (FileReader reader = new FileReader("messages.json")) {
             Type listType = new TypeToken<ArrayList<Message>>(){}.getType();
-            List<Message> loaded = gson.fromJson(reader, listType);
+            ArrayList<Message> loaded = gson.fromJson(reader, listType);
             if (loaded != null) {
                 existingMessages.addAll(loaded);
             }
         } catch (IOException e) {
-            // File doesn't exist yet, that's fine
         }
 
         existingMessages.add(this);
@@ -115,8 +112,30 @@ public final class Message {
             System.out.println("Error saving message to JSON: " + e.getMessage());
         }
     }
-    
-    // --- GETTERS FOR PART 3 ---
+
+    public static ArrayList<Message> loadMessagesFromJson() {
+        Gson gson = new Gson();
+        ArrayList<Message> messages = new ArrayList<>();
+        try (FileReader reader = new FileReader("messages.json")) {
+            Type listType = new TypeToken<ArrayList<Message>>(){}.getType();
+            ArrayList<Message> loaded = gson.fromJson(reader, listType);
+            if (loaded != null) {
+                messages.addAll(loaded);
+            }
+        } catch (IOException e) {
+        }
+        return messages;
+    }
+
+    public static void saveAllMessagesToJson(ArrayList<Message> messages) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter writer = new FileWriter("messages.json")) {
+            gson.toJson(messages, writer);
+        } catch (IOException e) {
+            System.out.println("Error saving messages to JSON: " + e.getMessage());
+        }
+    }
+
     public String getMessageID() { return messageID; }
     public String getRecipient() { return recipient; }
     public String getMessageText() { return messageText; }
