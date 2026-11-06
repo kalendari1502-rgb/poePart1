@@ -18,6 +18,7 @@ public final class Message {
     private final String recipient;
     private final String messageText;
     private final String messageHash;
+    private String status; // "Sent", "Stored", or "Disregarded"
     
     private static int totalMessagesSent = 0;
 
@@ -27,6 +28,7 @@ public final class Message {
         this.messageText = messageText;
         this.messageID = generateMessageID();
         this.messageHash = createMessageHash();
+        this.status = "Pending";
     }
 
     private String generateMessageID() {
@@ -60,16 +62,20 @@ public final class Message {
         switch (choice) {
             case 1 -> {
                 totalMessagesSent++;
+                this.status = "Sent";
                 return "Message successfully sent.";
             }
             case 2 -> {
+                this.status = "Disregarded";
                 return "Press 0 to delete the message.";
             }
             case 3 -> {
-                storeMessage();
+                this.status = "Stored";
+                storeMessage(); // Save to JSON
                 return "Message successfully stored.";
             }
             default -> {
+                this.status = "Disregarded";
                 return "Invalid option.";
             }
         }
@@ -86,6 +92,7 @@ public final class Message {
         return totalMessagesSent;
     }
 
+    // --- JSON STORAGE ---
     public void storeMessage() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<Message> existingMessages = new ArrayList<>();
@@ -97,7 +104,7 @@ public final class Message {
                 existingMessages.addAll(loaded);
             }
         } catch (IOException e) {
-            // File doesn't exist yet
+            // File doesn't exist yet, that's fine
         }
 
         existingMessages.add(this);
@@ -108,4 +115,11 @@ public final class Message {
             System.out.println("Error saving message to JSON: " + e.getMessage());
         }
     }
+    
+    // --- GETTERS FOR PART 3 ---
+    public String getMessageID() { return messageID; }
+    public String getRecipient() { return recipient; }
+    public String getMessageText() { return messageText; }
+    public String getMessageHash() { return messageHash; }
+    public String getStatus() { return status; }
 }
