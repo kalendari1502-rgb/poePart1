@@ -1,5 +1,6 @@
 package com.mycompany.poepart1;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PoePart1 {
@@ -51,18 +52,24 @@ public class PoePart1 {
             return;
         }
 
-        // --- PART 2: QUICKCHAT MENU ---
+        // --- PART 2 & 3: QUICKCHAT MENU ---
         System.out.println("\nWelcome to QuickChat.");
         
         boolean running = true;
         int numMessagesToSend = 0;
         int messagesSentCount = 0;
 
+        // Arrays for Part 3
+        ArrayList<Message> sentMessages = new ArrayList<>();
+        ArrayList<Message> disregardedMessages = new ArrayList<>();
+        ArrayList<Message> storedMessages = new ArrayList<>();
+
         while (running) {
             System.out.println("\n--- QuickChat Menu ---");
             System.out.println("1) Send Messages");
             System.out.println("2) Show recently sent messages");
-            System.out.println("3) Quit");
+            System.out.println("3) Stored Messages");
+            System.out.println("4) Quit");
             System.out.print("Choose an option: ");
             
             String menuChoice = scanner.nextLine();
@@ -88,7 +95,7 @@ public class PoePart1 {
 
                         if (msgText.length() > 250) {
                             System.out.println("Please enter a message of less than 250 characters.");
-                            break; // Go back to menu
+                            break; 
                         }
 
                         Message msg = new Message(messagesSentCount, recipient, msgText);
@@ -106,13 +113,26 @@ public class PoePart1 {
                         System.out.println("2) Disregard Message");
                         System.out.println("3) Store Message to send later");
                         System.out.print("Choice: ");
-                        int action = Integer.parseInt(scanner.nextLine());
+                        
+                        int action = 1;
+                        try {
+                            action = Integer.parseInt(scanner.nextLine());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input. Defaulting to Disregard.");
+                            action = 2;
+                        }
 
                         String actionResult = msg.SentMessage(action);
                         System.out.println(actionResult);
 
+                        // Populate the arrays based on user choice
                         if (action == 1) {
+                            sentMessages.add(msg);
                             messagesSentCount++; 
+                        } else if (action == 2) {
+                            disregardedMessages.add(msg);
+                        } else if (action == 3) {
+                            storedMessages.add(msg);
                         }
 
                         if (messagesSentCount >= numMessagesToSend) {
@@ -128,12 +148,17 @@ public class PoePart1 {
                     break;
 
                 case "3":
+                    System.out.println("\n--- Stored Messages Menu ---");
+                    System.out.println("This feature is coming in Step 2!");
+                    break;
+
+                case "4":
                     System.out.println("Exiting QuickChat. Goodbye!");
                     running = false;
                     break;
 
                 default:
-                    System.out.println("Invalid option. Please choose 1, 2, or 3.");
+                    System.out.println("Invalid option. Please choose 1, 2, 3, or 4.");
             }
         }
 
