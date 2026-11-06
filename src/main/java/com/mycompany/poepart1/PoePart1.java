@@ -188,71 +188,47 @@ public class PoePart1 {
                     }
                     break;
                 case "2":
-                    if (storedMessages.isEmpty()) {
+                    Message longest = getLongestMessage(storedMessages);
+                    if (longest != null) {
+                        System.out.println("Longest Message: \"" + longest.getMessageText() + "\"");
+                    } else {
                         System.out.println("No stored messages.");
-                        break;
                     }
-                    Message longest = storedMessages.get(0);
-                    for (Message m : storedMessages) {
-                        if (m.getMessageText().length() > longest.getMessageText().length()) {
-                            longest = m;
-                        }
-                    }
-                    System.out.println("Longest Message: \"" + longest.getMessageText() + "\"");
                     break;
                 case "3":
                     System.out.print("Enter Message ID to search: ");
                     String searchId = scanner.nextLine();
-                    boolean foundId = false;
-                    for (Message m : storedMessages) {
-                        if (m.getMessageID().equals(searchId)) {
-                            System.out.println("Recipient: " + m.getRecipient());
-                            System.out.println("Message: " + m.getMessageText());
-                            foundId = true;
-                            break;
-                        }
+                    Message foundId = searchByID(storedMessages, searchId);
+                    if (foundId != null) {
+                        System.out.println("Recipient: " + foundId.getRecipient());
+                        System.out.println("Message: " + foundId.getMessageText());
+                    } else {
+                        System.out.println("Message ID not found.");
                     }
-                    if (!foundId) System.out.println("Message ID not found.");
                     break;
                 case "4":
                     System.out.print("Enter Recipient to search (e.g., +27838884567): ");
                     String searchRec = scanner.nextLine();
-                    boolean foundRec = false;
-                    for (Message m : storedMessages) {
-                        if (m.getRecipient().equals(searchRec)) {
+                    ArrayList<Message> foundRecs = searchByRecipient(storedMessages, searchRec);
+                    if (foundRecs.isEmpty()) {
+                        System.out.println("No messages found for this recipient.");
+                    } else {
+                        for (Message m : foundRecs) {
                             System.out.println("Message: " + m.getMessageText());
-                            foundRec = true;
                         }
                     }
-                    if (!foundRec) System.out.println("No messages found for this recipient.");
                     break;
                 case "5":
                     System.out.print("Enter Message Hash to delete: ");
                     String searchHash = scanner.nextLine();
-                    boolean removed = false;
-                    for (int i = 0; i < storedMessages.size(); i++) {
-                        if (storedMessages.get(i).getMessageHash().equals(searchHash)) {
-                            System.out.println("Message: \"" + storedMessages.get(i).getMessageText() + "\" successfully deleted.");
-                            storedMessages.remove(i);
-                            Message.saveAllMessagesToJson(storedMessages);
-                            removed = true;
-                            break;
-                        }
+                    if (deleteByHash(storedMessages, searchHash)) {
+                        Message.saveAllMessagesToJson(storedMessages);
+                    } else {
+                        System.out.println("Message Hash not found.");
                     }
-                    if (!removed) System.out.println("Message Hash not found.");
                     break;
                 case "6":
-                    System.out.println("\n--- Full Stored Messages Report ---");
-                    if (storedMessages.isEmpty()) {
-                        System.out.println("No stored messages.");
-                    } else {
-                        for (Message m : storedMessages) {
-                            System.out.println("Hash: " + m.getMessageHash());
-                            System.out.println("Recipient: " + m.getRecipient());
-                            System.out.println("Message: " + m.getMessageText());
-                            System.out.println("-------------------------");
-                        }
-                    }
+                    System.out.println(generateReport(storedMessages));
                     break;
                 case "7":
                     inSubMenu = false;
@@ -261,5 +237,61 @@ public class PoePart1 {
                     System.out.println("Invalid option.");
             }
         }
+    }
+
+    public static Message getLongestMessage(ArrayList<Message> messages) {
+        if (messages.isEmpty()) return null;
+        Message longest = messages.get(0);
+        for (Message m : messages) {
+            if (m.getMessageText().length() > longest.getMessageText().length()) {
+                longest = m;
+            }
+        }
+        return longest;
+    }
+
+    public static Message searchByID(ArrayList<Message> messages, String id) {
+        for (Message m : messages) {
+            if (m.getMessageID().equals(id)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public static ArrayList<Message> searchByRecipient(ArrayList<Message> messages, String recipient) {
+        ArrayList<Message> results = new ArrayList<>();
+        for (Message m : messages) {
+            if (m.getRecipient().equals(recipient)) {
+                results.add(m);
+            }
+        }
+        return results;
+    }
+
+    public static boolean deleteByHash(ArrayList<Message> messages, String hash) {
+        for (int i = 0; i < messages.size(); i++) {
+            if (messages.get(i).getMessageHash().equals(hash)) {
+                System.out.println("Message: \"" + messages.get(i).getMessageText() + "\" successfully deleted.");
+                messages.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String generateReport(ArrayList<Message> messages) {
+        StringBuilder report = new StringBuilder("\n--- Full Stored Messages Report ---\n");
+        if (messages.isEmpty()) {
+            report.append("No stored messages.\n");
+        } else {
+            for (Message m : messages) {
+                report.append("Hash: ").append(m.getMessageHash()).append("\n");
+                report.append("Recipient: ").append(m.getRecipient()).append("\n");
+                report.append("Message: ").append(m.getMessageText()).append("\n");
+                report.append("-------------------------\n");
+            }
+        }
+        return report.toString();
     }
 }
